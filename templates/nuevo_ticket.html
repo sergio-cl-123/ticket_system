@@ -1,0 +1,261 @@
+{% extends 'layout.html' %}
+{% block body %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+
+    $(document).ready(function() {
+
+      // Obtenemos el elemento calendario
+      var creacion = $("#fec_creacion");
+      var creacion_futuro = $("#fec_expiracion");
+
+      // Seteamos el elemento calendario con la fecha actual
+      // Obtenemos la fecha actual
+    var fechaActual = new Date();
+    var fechaActual_temp = new Date();
+    var fechaFuturo = new Date(fechaActual_temp.setMonth(fechaActual_temp.getMonth() + 2));
+    
+    // Obtenemos el año actual
+    var anioActual = fechaActual.getFullYear();
+    var anioActual_cad = anioActual.toString();
+
+    // Obtenemos el mes actual
+    var mesActual = fechaActual.getMonth() + 1;
+    var mesActual_cad = mesActual.toString();
+
+    // Obtenemos el día actual
+    var diaActual = fechaActual.getDate();
+    var diaActual_cad = diaActual.toString();
+
+    // Obtenemos el año futuro
+    var anioFuturo = fechaFuturo.getFullYear();
+    var anioFuturo_cad = anioFuturo.toString();
+
+    // Obtenemos el mes futuro
+    var mesFuturo = fechaFuturo.getMonth() + 1;
+    var mesFuturo_cad = mesFuturo.toString();
+
+    // Obtenemos el día futuro
+    var diaFuturo = fechaFuturo.getDate();
+    var diaFuturo_cad = diaFuturo.toString();
+
+    fecha_format_Actual = anioActual_cad + "-" + mesActual_cad.padStart(2, "0") + "-" + diaActual_cad.padStart(2, "0")
+    fecha_format_Futuro = anioFuturo_cad + "-" + mesFuturo_cad.padStart(2, "0") + "-" + diaFuturo_cad.padStart(2, "0")
+    creacion.val( fecha_format_Actual);
+    creacion_futuro.val( fecha_format_Futuro);
+    });
+
+    // Función para obtener el cuadro de texto para la búsqueda
+    function obtenerInputBuscar() {
+    return document.getElementById("Buscar_coti");
+    }
+
+    // Función para añadir un evento keyup al cuadro de texto
+    function añadirEventoKeyup(inputBuscar, tabla) {
+    inputBuscar.addEventListener("keyup", function() {
+        // Obtenemos el texto que ha escrito el usuario
+        const textoBuscar = inputBuscar.value;
+
+        // Filtramos las filas de la tabla
+        const filasFiltradas = filtrarFilas(textoBuscar.toLowerCase(), tabla);
+
+        // Actualizamos la tabla para mostrar solo las filas filtradas
+        actualizarTabla(filasFiltradas, tabla);
+    });
+    }
+
+    // Función para filtrar las filas de la tabla
+    function filtrarFilas(textoBuscar, tabla) {
+    const textoBuscarEnMinusculas = textoBuscar.toLowerCase();
+
+    const filasFiltradas = tabla.querySelectorAll("tr");
+    for (const fila of filasFiltradas) {
+        // Convertimos el contenido de la fila a minúsculas
+        const contenidoFilaEnMinusculas = fila.textContent.toLowerCase();
+
+        // Comprobamos si la fila contiene el texto que ha escrito el usuario en minúsculas
+        const contieneTexto = contenidoFilaEnMinusculas.includes(textoBuscarEnMinusculas);
+
+        // Si la fila contiene el texto, la mostramos
+        fila.style.display = contieneTexto ? "table-row" : "none";
+    }
+
+    return filasFiltradas;
+    }
+
+    // Función para actualizar la tabla
+    function actualizarTabla(filasFiltradas, tabla) {
+    // Eliminamos todas las filas de la tabla
+    const tbody = tabla.querySelector("tbody");
+    tbody.innerHTML = "";
+
+    // Añadimos las filas filtradas a la tabla
+    for (const fila of filasFiltradas) {
+        tbody.appendChild(fila);
+    }
+    }
+
+    // Esperamos a que el DOM esté listo
+    document.addEventListener("DOMContentLoaded", function() {
+
+    // Obtenemos el cuadro de texto para la búsqueda
+    const inputBuscar = obtenerInputBuscar();
+
+    // Obtenemos la tabla sobre la cual estamos haciendo la búsqueda
+    const tabla = document.getElementById("tbody_cotizaciones");
+
+    // Añadimos un evento keyup al cuadro de texto
+    añadirEventoKeyup(inputBuscar, tabla);
+    });
+
+    $(document).ready(function(){
+        $("#btnEnviar").click(function(){
+
+            var nombre_archivo = $("#archivo").val();
+            const mensaje = $("#mensaje2");
+            if(nombre_archivo == ""){
+                mensaje.show();
+                return false;
+            }
+        });
+    });
+    
+  </script>
+
+<style>
+    body{
+        margin-bottom: 50px;
+    }
+    .errores{
+
+        display: none;
+    }
+</style>
+  
+<div class="row" id="NuevaCotizacion">
+
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{message}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <div class="col-md-5">
+        <div class="errores" id="mensaje2">
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                No se ha seleccionado archivo de cotización
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+
+        <div class="card card-body form-control">
+            <div class="card bg-light mb-3 form-control">
+                <div class="card-body">
+                  <h5 class="card-title text-center">Nueva cotización</h5>
+                  <!-- <p class="card-text">Ingresar los datos de nueva cotización</p> -->
+                </div>
+            </div>
+              
+            <form action="/nueva_coti" method="POST" enctype="multipart/form-data" name="formulario_datos" id="formulario_datos">
+                <div class="form-group">
+                    <input type="file" id="archivo" class="form-control" name="archivo" placeholder="Archivo Cotización" label="Archivo Cotización" accept="application/pdf">
+                    <div id="mensaje1" class="errores" >Seleccionar Archivo</div>
+                    <input type="text" name="Comunidad" placeholder="Comunidad" class="form-control">
+                    <input type="text" name="Direccion" placeholder="Direccion" class="form-control">
+                    <input type="text" name="Comuna" placeholder="Comuna" class="form-control">
+                    <input type="text" name="Contacto" placeholder="Contacto" class="form-control">
+                    <input type="text" name="Celular" placeholder="Celular" class="form-control">
+                    <input type="text" name="Email" placeholder="Email" class="form-control" id="mi_mail">
+                    <select class="form-select" aria-label="Dropdown list select" name="Estado">
+                        <option value="Activa">Activa</option>
+                        <option value="Expirada">Expirada</option>
+                    </select>
+                    <div class="card card-body form-control">
+                        <label class="form-label" for="name">Fecha creación:</label>
+                        <input type="date" class="form-control datepicker" data-toggle="datepicker" id="fec_creacion" name="Fecha_Creacion">
+                    </div>
+                    <div class="card card-body form-control">
+                        <label class="form-label" for="name">Fecha expiración:</label>
+                        <input type="date" class="form-control datepicker" data-toggle="datepicker" id="fec_expiracion" name="Fecha_Expiracion">
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="checkNombreArchivo" checked="on" name="checkNombreArchivo">
+                        <label class="form-check-label" for="flexSwitchCheckChecked">Agregar ID al nombre de archivo</label>
+                      </div>
+                    <br>
+                    <div class="form-group">
+                        <input type="submit" id="btnEnviar" class="btn btn-primary btn-block" placeholder="Guardar" value="Guardar">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+    <br>
+    <br>
+    <br>
+
+<div class="row">         
+    <div class="card" style="width:100%">
+        <div class="card-body card-body-scrollable">
+                <h5 id="prueba1" class="card-title" >Cotizaciones almacenadas</h5>
+                <div>
+                    <input type="text" placeholder="Buscar" id="Buscar_coti" class="form-control">
+                </div>
+                <br>
+                <div class="table-responsive">
+                <table class="table table-striped table-sm table-hover table-responsive table-bordered" id="tabla_main" >
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-nowrap">Acción</th>
+                            <th class="text-nowrap">Id</th>
+                            <th class="text-nowrap">Fecha Creación</th>
+                            <th class="text-nowrap">Fecha Expiración</th>
+                            <th class="text-nowrap">Estado</th>
+                            <th class="text-nowrap">Comunidad</th>
+                            <th class="text-nowrap">Dirección</th>
+                            <th class="text-nowrap">Comuna</th>
+                            <th class="text-nowrap">Persona Contacto</th>
+                            <th class="text-nowrap">Celular</th>
+                            <th class="text-nowrap">Email</th>
+                            <th class="text-nowrap">Nombre Archivo</th>
+                            <!-- <th class="text-nowrap">Ruta Archivo en Drive</th>
+                            <th class="text-nowrap">Link Descarga para Cliente</th> -->
+                        </tr>
+                    </thead>
+                    <tbody id="tbody_cotizaciones">
+                        {% for dato in datos %}
+                            <tr>
+                                <td class="text-nowrap text-truncate">
+                                    <a href="/edit/{{dato[0]}}" class="btn btn-info">Editar</a>
+                                </td>
+                                <td class="text-nowrap text-truncate">{{dato[0]}}</td>
+                                <td class="text-nowrap text-truncate">{{dato[1]}}</td>
+                                <td class="text-nowrap text-truncate">{{dato[2]}}</td>
+                                <td class="text-nowrap text-truncate">{{dato[3]}}</td>
+                                <td class="text-nowrap text-truncate">{{dato[4]}}</td>
+                                <td class="text-nowrap text-truncate">{{dato[5]}}</td>
+                                <td class="text-nowrap text-truncate">{{dato[6]}}</td>
+                                <td class="text-nowrap text-truncate">{{dato[7]}}</td>
+                                <td class="text-nowrap text-truncate">{{dato[8]}}</td>
+                                <td class="text-nowrap text-truncate">{{dato[9]}}</td>
+                                <td class="text-nowrap text-truncate">{{dato[10]}}</td>
+                                <!-- <td class="text-nowrap text-truncate">{{dato[9]}}</td>
+                                <td class="text-nowrap text-truncate">{{dato[10]}}</td> -->
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        </div>   
+    </div> 
+
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'layout_main.html' %}
+{% block body %}
+
+
+<style>
+    body{
+        margin-top: 50px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .errores{
+
+        display: none;
+    }
+</style>
+
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+
+    <div class="alert alert-primary alert-dismissible fade show" role="alert">
+        {{message}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+                
+<div class="row justify-content-center align-items-center">
+    <div class="col-md-5">
+            <form class="form-control" action="/Login" method="POST">
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Usuario</label>
+                    <input class="form-control" id="usuario" placeholder="Ingresar el Usuario" name="txtUser">
+                </div>
+                <div cass="form-group">
+                    <label for="exampleInputPassword1">Contraseña</label>
+                    <input type="password" class="form-control" id="pass" placeholder="Contraseña" name="txtPass">
+                    <small id="emailHelp" class="form-text text-muted">(*) Si no tienes usuario y contraseña, contacta al administrador</small>
+                </div>
+                <button type="submit" class="btn btn-primary">Aceptar</button>
+            </form>
+
+    </div>
+</div>
+    
+
+
+{% endblock %}
